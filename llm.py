@@ -71,7 +71,7 @@ def generate_assessment(lead: dict, result: dict) -> tuple[str, str]:
         "contents": [
             {"role": "user", "parts": [{"text": json.dumps(payload, ensure_ascii=False)}]}
         ],
-        "generationConfig": {"temperature": 0.0, "maxOutputTokens": 400},
+        "generationConfig": {"temperature": 0.0, "maxOutputTokens": 2048},
     }
 
     # Short connect timeout so a broken local IPv6 route fails fast,
@@ -94,7 +94,18 @@ def generate_assessment(lead: dict, result: dict) -> tuple[str, str]:
                 break
             resp.raise_for_status()
             data = resp.json()
-        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+        candidate = (data.get("candidates") or [{}])[0]
+        # Thinking models can burn the token budget on reasoning and return a
+        # truncated fragment — never ship a half-written assessment.
+        if candidate.get("finishReason") == "MAX_TOKENS":
+            log.warning("Gemini response truncated (MAX_TOKENS); using template")
+            return "", "template"
+        parts = (candidate.get("content") or {}).get("parts") or []
+        # Skip hidden reasoning parts; join the visible answer parts only.
+        text = " ".join(
+            p.get("text", "") for p in parts if not p.get("thought")
+        ).strip()
         text = re.sub(r"\s+", " ", text)
         if text:
             return text, "llm"

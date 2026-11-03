@@ -126,7 +126,7 @@ pytest -q          # 19 passed
 ## 7. Deploy (Render)
 
 Build: `pip install -r requirements.txt` · Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-Env vars: `LLM_PROVIDER=gemini`, `GEMINI_API_KEY` (secret), `GEMINI_MODEL=gemini-3.8-flash`,
+Env vars: `LLM_PROVIDER=gemini`, `GEMINI_API_KEY` (secret), `GEMINI_MODEL=gemini-3.5-flash`,
 `PYTHON_VERSION=3.11`. Push to `main` → Render auto-deploys.
 
 ## 8. Project structure

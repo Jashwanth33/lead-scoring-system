@@ -64,7 +64,7 @@ def generate_assessment(lead: dict, result: dict) -> tuple[str, str]:
         "negative_factors": result["negative_scoring_factors"],
     }
 
-    model = _env("GEMINI_MODEL", "gemini-3.8-flash")
+    model = _env("GEMINI_MODEL", "gemini-3.5-flash")
     url = GEMINI_URL.format(model=model)
     body = {
         "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},

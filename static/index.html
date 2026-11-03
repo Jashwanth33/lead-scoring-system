@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Lead Scoring — Explainable Lead Qualification</title>
+  <meta name="description" content="Deterministic, weighted B2B lead scoring (0-100) with transparent factors, scoring explanation and recommended next actions." />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="wrap">
+      <span class="logo" aria-hidden="true">◆</span>
+      <div>
+        <h1>AI Lead Scoring System</h1>
+        <p class="sub">Deterministic weighted scoring · LLM-written explanations · 0–100</p>
+      </div>
+      <span id="llmChip" class="chip chip-neutral" title="LLM status">checking…</span>
+    </div>
+  </header>
+
+  <main id="main" class="wrap grid">
+    <!-- ============ INPUT ============ -->
+    <section class="card" aria-labelledby="form-title">
+      <div class="card-head">
+        <h2 id="form-title">Lead details</h2>
+        <button type="button" id="sampleBtn" class="btn btn-ghost">Load sample lead</button>
+      </div>
+
+      <form id="leadForm" novalidate>
+        <div class="row two">
+          <div class="field"><label for="name">Name</label><input id="name" name="Name" autocomplete="off" placeholder="Rahul Sharma" /></div>
+          <div class="field"><label for="company">Company name</label><input id="company" name="Company Name" autocomplete="off" placeholder="ABC Technologies" /></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="title">Job title</label><input id="title" name="Job Title" autocomplete="off" placeholder="Founder" /></div>
+          <div class="field"><label for="industry">Industry</label><input id="industry" name="Industry" autocomplete="off" placeholder="IT Services" /></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="location">Company location</label><input id="location" name="Company Location" autocomplete="off" placeholder="Bangalore" /></div>
+          <div class="field"><label for="size">Company size</label><input id="size" name="Company Size" autocomplete="off" placeholder="50-100 Employees" /></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="email">Email</label><input id="email" name="Email" type="email" autocomplete="off" placeholder="rahul@abctechnologies.com" /></div>
+          <div class="field"><label for="phone">Phone</label><input id="phone" name="Phone" autocomplete="off" placeholder="+91 98765 43210" /></div>
+        </div>
+        <div class="row two">
+          <div class="field"><label for="website">Website</label><input id="website" name="Website" autocomplete="off" placeholder="www.abctechnologies.com" /></div>
+          <div class="field">
+            <label for="source">Lead source</label>
+            <select id="source" name="Lead Source">
+              <option>Website</option><option>Referral</option><option>LinkedIn</option>
+              <option>Cold Outreach</option><option>Event</option><option>Partner</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="requirement">Requirement <span class="muted">(drives 30% of the score)</span></label>
+            <textarea id="requirement" name="Requirement" rows="3" placeholder="Looking for CRM software — need pricing and a demo next week"></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" id="scoreBtn">Score lead</button>
+          <button type="reset" class="btn btn-ghost" id="clearBtn">Clear</button>
+        </div>
+        <p id="formError" class="error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <!-- ============ RESULT ============ -->
+    <section class="card results" id="results" aria-live="polite" hidden>
+      <div class="score-row">
+        <div class="gauge" id="gauge">
+          <strong id="scoreValue">0</strong>
+          <span>/100</span>
+        </div>
+        <div class="score-meta">
+          <span class="badge" id="badge">—</span>
+          <span class="chip" id="confChip">—</span>
+          <span class="chip chip-neutral" id="srcChip">—</span>
+          <p class="assess" id="assessment"></p>
+        </div>
+      </div>
+
+      <h3>Score breakdown <span class="muted">(weighted matrix)</span></h3>
+      <div id="breakdown" class="breakdown"></div>
+
+      <div class="two-col">
+        <div class="factors pos">
+          <h3>✓ Positive factors</h3>
+          <ul id="positives"></ul>
+        </div>
+        <div class="factors neg">
+          <h3>✕ Negative factors</h3>
+          <ul id="negatives"></ul>
+        </div>
+      </div>
+
+      <h3>Scoring explanation</h3>
+      <p class="prose" id="explanation"></p>
+
+      <h3>Recommended next action</h3>
+      <p class="prose action" id="action"></p>
+
+      <details>
+        <summary>Raw JSON output</summary>
+        <pre id="rawJson"></pre>
+      </details>
+    </section>
+
+    <!-- ============ METHODOLOGY ============ -->
+    <section class="card method" aria-labelledby="method-title">
+      <h2 id="method-title">Scoring methodology</h2>
+      <table>
+        <thead><tr><th>Parameter</th><th>Weight</th><th>Sub-criteria</th></tr></thead>
+        <tbody>
+          <tr><td>Firmographics</td><td>30%</td><td>Company size (14) · Industry fit (10) · Location alignment (6)</td></tr>
+          <tr><td>Authority / Persona</td><td>25%</td><td>C-level/Founder 25 · Manager 15 · IC 6 · Intern/Student 0</td></tr>
+          <tr><td>Intent / Requirement</td><td>30%</td><td>Buying language 30 · Category interest 18 · Informational 5</td></tr>
+          <tr><td>Contact Completeness</td><td>15%</td><td>Business email 7 · Phone 4 · Website 4</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">
+        Hot ≥ 70 · Warm 40–69 · Cold &lt; 40. Scores are a pure function of the input —
+        the same lead always scores identically. The LLM writes the narrative only.
+      </p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">AI-Based Lead Scoring System · deterministic weighted engine + Gemini narrative layer</div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
